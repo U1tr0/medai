@@ -81,8 +81,12 @@ WSGI_APPLICATION = 'medai.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'medai',
+        'USER': 'medai_user',
+        'PASSWORD': 'secure_password',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
