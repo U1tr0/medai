@@ -26,7 +26,7 @@
                 <td>{{ study.patient_id }}</td>
                 <td>{{ study.processing_status }}</td>
                 <td>{{ study.upload_date }}</td>
-                <td><a href="#">View</a></td>
+                <td><a href="{% url 'study_detail' study.id %}">View</a></td>
             </tr>
             {% endfor %}
         </tbody>

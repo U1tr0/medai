@@ -20,6 +20,22 @@ class DicomStudy(models.Model):
     )
     result_left_hip = models.BooleanField(null=True, blank=True)  # True - перелом, False - норма
     result_right_hip = models.BooleanField(null=True, blank=True)
+    dicom_preview = models.ImageField(
+        upload_to='dicom_previews/',
+        null=True,
+        blank=True,
+        verbose_name="DICOM Preview"
+    )
+    left_hip_image = models.ImageField(
+        upload_to='processed/',
+        null=True,
+        blank=True
+    )
+    right_hip_image = models.ImageField(
+        upload_to='processed/',
+        null=True,
+        blank=True
+    )
 
     def __str__(self):
         return f"Study {self.id} - {self.title}"

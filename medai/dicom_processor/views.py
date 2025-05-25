@@ -5,6 +5,17 @@ from .forms import DicomUploadForm
 import pydicom
 from datetime import datetime
 from .kafka_service import send_to_kafka
+from django.views.generic import DetailView
+from .models import DicomStudy
+
+
+class StudyDetailView(DetailView):
+    model = DicomStudy
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['has_preview'] = bool(self.object.dicom_preview)
+        return context
 
 class StudyListView(ListView):
     model = DicomStudy

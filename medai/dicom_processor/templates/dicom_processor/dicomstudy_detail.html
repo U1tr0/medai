@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Study Details - DICOM Processor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .study-info {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .results-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .result-box {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .fracture {
+            border-left: 5px solid #dc3545;
+            background-color: #ffeeee;
+        }
+        .normal {
+            border-left: 5px solid #28a745;
+            background-color: #eeffee;
+        }
+        .image-container {
+            margin-top: 15px;
+            text-align: center;
+        }
+        .dicom-image {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ccc;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .back-link:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Study Details #{{ study.id }}</h1>
+    
+    <div class="study-info">
+        <h2>Patient Information</h2>
+        <table>
+            <tr>
+                <th>Title</th>
+                <td>{{ study.title }}</td>
+            </tr>
+            <tr>
+                <th>Patient ID</th>
+                <td>{{ study.patient_id }}</td>
+            </tr>
+            <tr>
+                <th>Sex</th>
+                <td>{{ study.patient_sex }}</td>
+            </tr>
+            <tr>
+                <th>Age</th>
+                <td>{{ study.patient_age }}</td>
+            </tr>
+            <tr>
+                <th>Study Date</th>
+                <td>{{ study.study_date }}</td>
+            </tr>
+            <tr>
+                <th>Upload Date</th>
+                <td>{{ study.upload_date }}</td>
+            </tr>
+            <tr>
+                <th>Status</th>
+                <td>{{ study.processing_status }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <h2>Original DICOM Image</h2>
+    <div class="image-container">
+    {% if study.dicom_preview %}
+        <img src="{{ study.dicom_preview.url }}" class="dicom-image" alt="DICOM Preview">
+    {% else %}
+        <div class="alert alert-warning">
+            DICOM preview not available
+        </div>
+    {% endif %}
+</div>
+
+    <h2>Fracture Analysis Results</h2>
+    <div class="results-container">
+        <div class="result-box {% if study.result_left_hip %}fracture{% else %}normal{% endif %}">
+            <h3>Left Hip</h3>
+            <p><strong>Result:</strong> 
+                {% if study.result_left_hip %}
+                    <span style="color: #dc3545;">Fracture Detected</span>
+                {% else %}
+                    <span style="color: #28a745;">Normal</span>
+                {% endif %}
+            </p>
+            {% if study.left_hip_image %}
+                <div class="image-container">
+                    <h4>Processed Image</h4>
+                    <img src="{{ study.left_hip_image.url }}" class="dicom-image" alt="Left Hip">
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="result-box {% if study.result_right_hip %}fracture{% else %}normal{% endif %}">
+            <h3>Right Hip</h3>
+            <p><strong>Result:</strong> 
+                {% if study.result_right_hip %}
+                    <span style="color: #dc3545;">Fracture Detected</span>
+                {% else %}
+                    <span style="color: #28a745;">Normal</span>
+                {% endif %}
+            </p>
+            {% if study.right_hip_image %}
+                <div class="image-container">
+                    <h4>Processed Image</h4>
+                    <img src="{{ study.right_hip_image.url }}" class="dicom-image" alt="Right Hip">
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <a href="{% url 'study_list' %}" class="back-link">← Back to Studies List</a>
+</body>
+</html>
