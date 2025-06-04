@@ -1,165 +1,297 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Study Details - DICOM Processor</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Details #{{ object.id }} - DICOM Processor</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            line-height: 1.6;
+        :root {
+            --fracture-color: #dc3545;
+            --normal-color: #28a745;
+            --primary-color: #007bff;
+            --border-color: #ddd;
+            --light-bg: #f9f9f9;
         }
-        h1, h2 {
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
             color: #333;
         }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+
+        h1 {
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
         .study-info {
             margin-bottom: 30px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: #f9f9f9;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--light-bg);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
+
         .results-container {
             display: flex;
+            flex-wrap: wrap;
             gap: 20px;
             margin-top: 20px;
         }
+
         .result-box {
             flex: 1;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            min-width: 300px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
         }
+
+        .result-box:hover {
+            transform: translateY(-5px);
+        }
+
         .fracture {
-            border-left: 5px solid #dc3545;
-            background-color: #ffeeee;
+            border-left: 5px solid var(--fracture-color);
+            background-color: rgba(220, 53, 69, 0.05);
         }
+
         .normal {
-            border-left: 5px solid #28a745;
-            background-color: #eeffee;
+            border-left: 5px solid var(--normal-color);
+            background-color: rgba(40, 167, 69, 0.05);
         }
+
+        .image-section {
+            margin: 25px 0;
+        }
+
         .image-container {
             margin-top: 15px;
             text-align: center;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: white;
         }
+
         .dicom-image {
             max-width: 100%;
             height: auto;
-            border: 1px solid #ccc;
-        }
-        .back-link {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 8px 15px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
+            max-height: 500px;
+            object-fit: contain;
             border-radius: 4px;
         }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
         .back-link:hover {
             background-color: #0056b3;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
+            background-color: white;
         }
-        table, th, td {
-            border: 1px solid #ddd;
-        }
+
         th, td {
-            padding: 12px;
+            padding: 12px 15px;
             text-align: left;
+            border-bottom: 1px solid var(--border-color);
         }
+
         th {
             background-color: #f2f2f2;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .image-error {
+            color: #dc3545;
+            padding: 10px;
+            border: 1px dashed #dc3545;
+            margin: 10px 0;
+        }
+
+        .image-path {
+            font-family: monospace;
+            font-size: 0.8em;
+            color: #666;
+            word-break: break-all;
+        }
+
+        @media (max-width: 768px) {
+            .results-container {
+                flex-direction: column;
+            }
+
+            .result-box {
+                min-width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Study Details #{{ study.id }}</h1>
-    
-    <div class="study-info">
-        <h2>Patient Information</h2>
-        <table>
-            <tr>
-                <th>Title</th>
-                <td>{{ study.title }}</td>
-            </tr>
-            <tr>
-                <th>Patient ID</th>
-                <td>{{ study.patient_id }}</td>
-            </tr>
-            <tr>
-                <th>Sex</th>
-                <td>{{ study.patient_sex }}</td>
-            </tr>
-            <tr>
-                <th>Age</th>
-                <td>{{ study.patient_age }}</td>
-            </tr>
-            <tr>
-                <th>Study Date</th>
-                <td>{{ study.study_date }}</td>
-            </tr>
-            <tr>
-                <th>Upload Date</th>
-                <td>{{ study.upload_date }}</td>
-            </tr>
-            <tr>
-                <th>Status</th>
-                <td>{{ study.processing_status }}</td>
-            </tr>
-        </table>
-    </div>
+    <div class="container">
+        <h1>Study Details #{{ object.id }}</h1>
 
-    <h2>Original DICOM Image</h2>
-    <div class="image-container">
-    {% if study.dicom_preview %}
-        <img src="{{ study.dicom_preview.url }}" class="dicom-image" alt="DICOM Preview">
-    {% else %}
-        <div class="alert alert-warning">
-            DICOM preview not available
+        <div class="study-info">
+            <h2>Patient Information</h2>
+            <table>
+                <tr>
+                    <th>Title</th>
+                    <td>{{ object.title|default:"Not specified" }}</td>
+                </tr>
+                <tr>
+                    <th>Patient ID</th>
+                    <td>{{ object.patient_id|default:"Not specified" }}</td>
+                </tr>
+                <tr>
+                    <th>Sex</th>
+                    <td>{{ object.patient_sex|default:"Not specified" }}</td>
+                </tr>
+                <tr>
+                    <th>Age</th>
+                    <td>{{ object.patient_age|default:"Not specified" }}</td>
+                </tr>
+                <tr>
+                    <th>Study Date</th>
+                    <td>{{ object.study_date|date:"Y-m-d"|default:"Not specified" }}</td>
+                </tr>
+                <tr>
+                    <th>Upload Date</th>
+                    <td>{{ object.upload_date|date:"Y-m-d H:i" }}</td>
+                </tr>
+                <tr>
+                    <th>Status</th>
+                    <td>
+                        <span style="text-transform: capitalize;">{{ object.processing_status }}</span>
+                        {% if object.processing_status == 'failed' %}
+                            <span style="color: var(--fracture-color);">⚠️</span>
+                        {% elif object.processing_status == 'completed' %}
+                            <span style="color: var(--normal-color);">✓</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
         </div>
-    {% endif %}
-</div>
 
-    <h2>Fracture Analysis Results</h2>
-    <div class="results-container">
-        <div class="result-box {% if study.result_left_hip %}fracture{% else %}normal{% endif %}">
-            <h3>Left Hip</h3>
-            <p><strong>Result:</strong> 
-                {% if study.result_left_hip %}
-                    <span style="color: #dc3545;">Fracture Detected</span>
+        <div class="image-section">
+            <h2>Original DICOM Image</h2>
+            <div class="image-container">
+                {% if object.dicom_preview %}
+                    <img src="{{ object.dicom_preview.url }}"
+                         class="dicom-image"
+                         alt="DICOM Preview"
+                         onerror="this.style.display='none'; document.getElementById('preview-error').style.display='block'">
+                    <div id="preview-error" class="alert" style="display:none;">
+                        <div class="image-error">Error loading preview image</div>
+                        <div class="image-path">URL: {{ object.dicom_preview.url }}</div>
+                    </div>
                 {% else %}
-                    <span style="color: #28a745;">Normal</span>
+                    <div class="alert">
+                        DICOM preview not generated
+                    </div>
                 {% endif %}
-            </p>
-            {% if study.left_hip_image %}
-                <div class="image-container">
-                    <h4>Processed Image</h4>
-                    <img src="{{ study.left_hip_image.url }}" class="dicom-image" alt="Left Hip">
-                </div>
-            {% endif %}
+            </div>
         </div>
 
-        <div class="result-box {% if study.result_right_hip %}fracture{% else %}normal{% endif %}">
-            <h3>Right Hip</h3>
-            <p><strong>Result:</strong> 
-                {% if study.result_right_hip %}
-                    <span style="color: #dc3545;">Fracture Detected</span>
-                {% else %}
-                    <span style="color: #28a745;">Normal</span>
-                {% endif %}
-            </p>
-            {% if study.right_hip_image %}
+        <h2>Fracture Analysis Results</h2>
+        <div class="results-container">
+            <div class="result-box {% if object.result_left_hip == 0 %}fracture{% else %}normal{% endif %}">
+                <h3>Left Hip</h3>
+                <p><strong>Result:</strong>
+                    {% if object.result_left_hip == 0 %}
+                        <span style="color: var(--fracture-color); font-weight: 600;">Fracture Detected</span>
+                    {% else %}
+                        <span style="color: var(--normal-color); font-weight: 600;">Normal</span>
+                    {% endif %}
+                </p>
                 <div class="image-container">
-                    <h4>Processed Image</h4>
-                    <img src="{{ study.right_hip_image.url }}" class="dicom-image" alt="Right Hip">
+                    {% if object.left_hip_image %}
+                        <img src="{{ object.left_hip_image.url }}"
+                             class="dicom-image"
+                             alt="Left Hip Processed Image"
+                             onerror="this.style.display='none'; document.getElementById('left-hip-error').style.display='block'">
+                        <div id="left-hip-error" class="alert" style="display:none;">
+                            <div class="image-error">Error loading left hip image</div>
+                            <div class="image-path">URL: {{ object.left_hip_image.url }}</div>
+                        </div>
+                    {% else %}
+                        <div class="alert">
+                            Left hip image not generated
+                        </div>
+                    {% endif %}
                 </div>
-            {% endif %}
+            </div>
+
+            <div class="result-box {% if object.result_right_hip == 0 %}fracture{% else %}normal{% endif %}">
+                <h3>Right Hip</h3>
+                <p><strong>Result:</strong>
+                    {% if object.result_right_hip == 0 %}
+                        <span style="color: var(--fracture-color); font-weight: 600;">Fracture Detected</span>
+                    {% else %}
+                        <span style="color: var(--normal-color); font-weight: 600;">Normal</span>
+                    {% endif %}
+                </p>
+                <div class="image-container">
+                    {% if object.right_hip_image %}
+                        <img src="{{ object.right_hip_image.url }}"
+                             class="dicom-image"
+                             alt="Right Hip Processed Image"
+                             onerror="this.style.display='none'; document.getElementById('right-hip-error').style.display='block'">
+                        <div id="right-hip-error" class="alert" style="display:none;">
+                            <div class="image-error">Error loading right hip image</div>
+                            <div class="image-path">URL: {{ object.right_hip_image.url }}</div>
+                        </div>
+                    {% else %}
+                        <div class="alert">
+                            Right hip image not generated
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
+
+        <a href="{% url 'study_list' %}" class="back-link">← Back to Studies List</a>
     </div>
-
-    <a href="{% url 'study_list' %}" class="back-link">← Back to Studies List</a>
 </body>
 </html>

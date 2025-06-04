@@ -21,7 +21,7 @@ class StudyListView(ListView):
     model = DicomStudy
     template_name = 'dicom_processor/study_list.html'
     context_object_name = 'studies'
-
+    ordering = ['-upload_date']
 
 def upload_study(request):
     if request.method == 'POST':

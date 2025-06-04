@@ -9,6 +9,7 @@ from kafka import KafkaConsumer, KafkaProducer
 from kafka.errors import KafkaError
 from dicom_processor.models import DicomStudy
 from dicom_processor.services.model_service import HipFractureDetector
+from django.conf import settings
 
 # Configure logging
 logging.basicConfig(
@@ -231,15 +232,67 @@ class Command(BaseCommand):
             return None
 
     def process_dicom_file(self, study):
-        """Process DICOM file and return results"""
-        if not study.dicom_file:
-            raise ValueError("DICOM file not attached")
+        """Process DICOM file and save preview/images"""
+        try:
+            import pydicom
+            from PIL import Image
+            import numpy as np
 
-        dicom_path = study.dicom_file.path
-        if not os.path.exists(dicom_path):
-            raise FileNotFoundError(f"DICOM file missing at {dicom_path}")
+            # 1. Получаем путь к DICOM файлу
+            dicom_path = study.dicom_file.path
+            logger.info(f"Processing DICOM file at: {dicom_path}")
 
-        return self.detector.process_dicom(dicom_path)
+            # 2. Создаем директории, если их нет
+            os.makedirs(os.path.join(settings.MEDIA_ROOT, 'dicom_previews'), exist_ok=True)
+            os.makedirs(os.path.join(settings.MEDIA_ROOT, 'processed'), exist_ok=True)
+
+            # 3. Конвертируем DICOM в JPEG preview
+            preview_filename = f'preview_{study.id}.jpg'
+            preview_path = os.path.join('dicom_previews', preview_filename)
+            full_preview_path = os.path.join(settings.MEDIA_ROOT, preview_path)
+
+            # Чтение DICOM файла
+            ds = pydicom.dcmread(dicom_path)
+            pixel_array = ds.pixel_array
+
+            # Нормализация и конвертация
+            pixel_array = (pixel_array - pixel_array.min()) / (pixel_array.max() - pixel_array.min()) * 255
+            pixel_array = pixel_array.astype(np.uint8)
+
+            # Сохранение preview
+            im = Image.fromarray(pixel_array)
+            im.save(full_preview_path, quality=90)
+            logger.info(f"Saved preview to: {full_preview_path}")
+
+            # 4. Разделяем на левое/правое бедро (примерная логика)
+            # Здесь должна быть ваша реальная логика обработки
+            left_filename = f'left_{study.id}.jpg'
+            right_filename = f'right_{study.id}.jpg'
+
+            left_path = os.path.join('processed', left_filename)
+            right_path = os.path.join('processed', right_filename)
+
+            full_left_path = os.path.join(settings.MEDIA_ROOT, left_path)
+            full_right_path = os.path.join(settings.MEDIA_ROOT, right_path)
+
+            # Пример: просто сохраняем уменьшенные копии
+            im.crop((0, 0, im.width // 2, im.height)).save(full_left_path)
+            im.crop((im.width // 2, 0, im.width, im.height)).save(full_right_path)
+
+            # 5. Обновляем модель
+            study.dicom_preview = preview_path
+            study.left_hip_image = left_path
+            study.right_hip_image = right_path
+            study.save()
+
+            logger.info(f"Successfully processed images for study {study.id}")
+
+            # Возвращаем результаты анализа
+            return self.detector.process_dicom(dicom_path)
+
+        except Exception as e:
+            logger.error(f"Error processing DICOM file: {str(e)}", exc_info=True)
+            raise
 
     def update_study_results(self, study, results):
         """Update study with processing results"""

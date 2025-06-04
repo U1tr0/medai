@@ -37,5 +37,13 @@ class DicomStudy(models.Model):
         blank=True
     )
 
+    def preview_exists(self):
+        return bool(self.dicom_preview) and os.path.exists(self.dicom_preview.path)
+
+    def left_hip_exists(self):
+        return bool(self.left_hip_image) and os.path.exists(self.left_hip_image.path)
+
+    def right_hip_exists(self):
+        return bool(self.right_hip_image) and os.path.exists(self.right_hip_image.path)
     def __str__(self):
         return f"Study {self.id} - {self.title}"
