@@ -11,6 +11,9 @@
             --primary-color: #007bff;
             --border-color: #ddd;
             --light-bg: #f9f9f9;
+            --confidence-high: #28a745;
+            --confidence-medium: #ffc107;
+            --confidence-low: #dc3545;
         }
 
         body {
@@ -75,6 +78,35 @@
         .normal {
             border-left: 5px solid var(--normal-color);
             background-color: rgba(40, 167, 69, 0.05);
+        }
+
+        .confidence-meter {
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .confidence-level {
+            height: 100%;
+            border-radius: 5px;
+        }
+
+        .confidence-high {
+            background-color: var(--confidence-high);
+        }
+
+        .confidence-medium {
+            background-color: var(--confidence-medium);
+        }
+
+        .confidence-low {
+            background-color: var(--confidence-low);
+        }
+
+        .confidence-value {
+            font-weight: 600;
         }
 
         .image-section {
@@ -245,6 +277,36 @@
                         <span style="color: var(--normal-color); font-weight: 600;">Normal</span>
                     {% endif %}
                 </p>
+
+                <p><strong>Model Confidence:</strong>
+                    {% if object.confidence_left %}
+                        <span class="confidence-value" style="color:
+                            {% if object.confidence_left >= 80 %}
+                                var(--confidence-high)
+                            {% elif object.confidence_left >= 60 %}
+                                var(--confidence-medium)
+                            {% else %}
+                                var(--confidence-low)
+                            {% endif %}">
+                            {{ object.confidence_left|floatformat:1 }}%
+                        </span>
+                        <div class="confidence-meter">
+                            <div class="confidence-level
+                                {% if object.confidence_left >= 80 %}
+                                    confidence-high
+                                {% elif object.confidence_left >= 60 %}
+                                    confidence-medium
+                                {% else %}
+                                    confidence-low
+                                {% endif %}"
+                                style="width: {{ object.confidence_left }}%">
+                            </div>
+                        </div>
+                    {% else %}
+                        <span>Not available</span>
+                    {% endif %}
+                </p>
+
                 <div class="image-container">
                     {% if object.left_hip_image %}
                         <img src="{{ object.left_hip_image.url }}"
@@ -272,6 +334,36 @@
                         <span style="color: var(--normal-color); font-weight: 600;">Normal</span>
                     {% endif %}
                 </p>
+
+                <p><strong>Model Confidence:</strong>
+                    {% if object.confidence_right %}
+                        <span class="confidence-value" style="color:
+                            {% if object.confidence_right >= 80 %}
+                                var(--confidence-high)
+                            {% elif object.confidence_right >= 60 %}
+                                var(--confidence-medium)
+                            {% else %}
+                                var(--confidence-low)
+                            {% endif %}">
+                            {{ object.confidence_right|floatformat:1 }}%
+                        </span>
+                        <div class="confidence-meter">
+                            <div class="confidence-level
+                                {% if object.confidence_right >= 80 %}
+                                    confidence-high
+                                {% elif object.confidence_right >= 60 %}
+                                    confidence-medium
+                                {% else %}
+                                    confidence-low
+                                {% endif %}"
+                                style="width: {{ object.confidence_right }}%">
+                            </div>
+                        </div>
+                    {% else %}
+                        <span>Not available</span>
+                    {% endif %}
+                </p>
+
                 <div class="image-container">
                     {% if object.right_hip_image %}
                         <img src="{{ object.right_hip_image.url }}"

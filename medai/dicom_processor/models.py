@@ -1,4 +1,5 @@
 from django.db import models
+import os
 
 class DicomStudy(models.Model):
     title = models.CharField(max_length=255, blank=True)
@@ -36,6 +37,9 @@ class DicomStudy(models.Model):
         null=True,
         blank=True
     )
+    confidence_left = models.FloatField(null=True, blank=True, verbose_name="Confidence Score Left Hip")
+    confidence_right = models.FloatField(null=True, blank=True, verbose_name="Confidence Score Right Hip")
+
 
     def preview_exists(self):
         return bool(self.dicom_preview) and os.path.exists(self.dicom_preview.path)

@@ -25,6 +25,29 @@
             background-color: #f8f9fa;
         }
 
+        .disclaimer-banner {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .disclaimer-title {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 8px;
+        }
+
+        .disclaimer-text {
+            color: #856404;
+            margin: 0;
+            font-size: 0.95em;
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -155,12 +178,22 @@
             }
 
             .upload-btn {
+                width: 100%;
                 margin-top: 15px;
+                text-align: center;
             }
         }
     </style>
 </head>
 <body>
+    <div class="disclaimer-banner">
+        <div class="disclaimer-title">IMPORTANT DISCLAIMER</div>
+        <p class="disclaimer-text">
+            This is an educational/research project for hip fracture detection only and NOT a certified medical device.
+            Results should not be used for clinical decision-making. Always consult healthcare professionals for medical diagnosis.
+        </p>
+    </div>
+
     <div class="container">
         <div class="header">
             <h1>Medical AI - Hip Fracture Detection</h1>

@@ -264,8 +264,7 @@ class Command(BaseCommand):
             im.save(full_preview_path, quality=90)
             logger.info(f"Saved preview to: {full_preview_path}")
 
-            # 4. Разделяем на левое/правое бедро (примерная логика)
-            # Здесь должна быть ваша реальная логика обработки
+            # 4. Разделяем на левое/правое бедро
             left_filename = f'left_{study.id}.jpg'
             right_filename = f'right_{study.id}.jpg'
 
@@ -275,20 +274,36 @@ class Command(BaseCommand):
             full_left_path = os.path.join(settings.MEDIA_ROOT, left_path)
             full_right_path = os.path.join(settings.MEDIA_ROOT, right_path)
 
-            # Пример: просто сохраняем уменьшенные копии
+            # Сохраняем разделенные изображения
             im.crop((0, 0, im.width // 2, im.height)).save(full_left_path)
             im.crop((im.width // 2, 0, im.width, im.height)).save(full_right_path)
 
-            # 5. Обновляем модель
+            # 5. Получаем предсказания модели с confidence scores
+            # Предполагаем, что detector.process_dicom теперь возвращает:
+            # (left_pred, left_confidence, right_pred, right_confidence)
+            left_pred, left_confidence, right_pred, right_confidence = self.detector.process_dicom(dicom_path)
+
+            # Преобразуем confidence в проценты (если модель возвращает 0-1)
+            left_confidence = left_confidence * 100 if left_confidence <= 1.0 else left_confidence
+            right_confidence = right_confidence * 100 if right_confidence <= 1.0 else right_confidence
+
+            # 6. Обновляем модель
             study.dicom_preview = preview_path
             study.left_hip_image = left_path
             study.right_hip_image = right_path
+            study.result_left_hip = left_pred
+            study.result_right_hip = right_pred
+            study.confidence_left = left_confidence
+            study.confidence_right = right_confidence
             study.save()
 
-            logger.info(f"Successfully processed images for study {study.id}")
+            logger.info(
+                f"Successfully processed study {study.id}. "
+                f"Left: {'Fracture' if left_pred else 'Normal'} ({left_confidence:.2f}%), "
+                f"Right: {'Fracture' if right_pred else 'Normal'} ({right_confidence:.2f}%)"
+            )
 
-            # Возвращаем результаты анализа
-            return self.detector.process_dicom(dicom_path)
+            return left_pred, left_confidence, right_pred, right_confidence
 
         except Exception as e:
             logger.error(f"Error processing DICOM file: {str(e)}", exc_info=True)
@@ -296,13 +311,17 @@ class Command(BaseCommand):
 
     def update_study_results(self, study, results):
         """Update study with processing results"""
-        left_pred, right_pred = results
+        left_pred, left_confidence, right_pred, right_confidence = results
         study.result_left_hip = left_pred
         study.result_right_hip = right_pred
+        study.confidence_left = left_confidence
+        study.confidence_right = right_confidence
         study.processing_status = 'completed'
         study.save(update_fields=[
             'result_left_hip',
             'result_right_hip',
+            'confidence_left',
+            'confidence_right',
             'processing_status'
         ])
 

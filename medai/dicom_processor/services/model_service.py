@@ -20,11 +20,9 @@ class HipFractureDetector:
     def load_model(self, model_path):
         """Загрузка модели с предварительно обученными весами"""
         try:
-            # Создаем модель с такой же архитектурой, как при обучении
             model = models.resnet18(weights=None)
             model.fc = nn.Linear(model.fc.in_features, 2)  # 2 класса
 
-            # Загрузка весов
             if not os.path.exists(model_path):
                 raise FileNotFoundError(f"Model file not found at {model_path}")
 
@@ -53,20 +51,12 @@ class HipFractureDetector:
     def dicom_to_rgb(self, dicom_path):
         """Конвертация DICOM в 3-канальное RGB изображение"""
         try:
-            # Чтение DICOM
             ds = pydicom.dcmread(dicom_path)
             img = ds.pixel_array.astype(np.float32)
-
-            # Нормализация
             img = (img - img.min()) / (img.max() - img.min()) * 255
             img = img.astype(np.uint8)
-
-            # Конвертация в PIL Image (grayscale)
             pil_img = Image.fromarray(img).convert('L')
-
-            # Конвертация в RGB (дублируем канал)
             rgb_img = Image.merge("RGB", (pil_img, pil_img, pil_img))
-
             return rgb_img
 
         except Exception as e:
@@ -76,43 +66,56 @@ class HipFractureDetector:
     def preprocess_dicom(self, dicom_path):
         """Обработка DICOM файла и разделение на суставы"""
         try:
-            # Конвертация в RGB
             img = self.dicom_to_rgb(dicom_path)
             width, height = img.size
-
-            # Разделение на левую и правую половины
             left_img = img.crop((0, 0, width // 2, height))
             right_img = img.crop((width // 2, 0, width, height))
-
             return left_img, right_img
 
         except Exception as e:
             logger.error(f"DICOM preprocessing failed: {str(e)}")
             raise
 
-    def predict(self, image_pil):
-        """Предсказание для PIL Image"""
+    def predict_with_confidence(self, image_pil):
+        """Предсказание с возвратом confidence score"""
         try:
             image = self.transform(image_pil).unsqueeze(0).to(self.device)
 
             with torch.no_grad():
                 outputs = self.model(image)
-                _, preds = torch.max(outputs, 1)
+                probabilities = torch.nn.functional.softmax(outputs, dim=1)
+                confidence, preds = torch.max(probabilities, 1)
 
-            return bool(preds.item())
+            return bool(preds.item()), confidence.item()
 
         except Exception as e:
-            logger.error(f"Prediction failed: {str(e)}")
+            logger.error(f"Prediction with confidence failed: {str(e)}")
             raise
 
+    def predict(self, image_pil):
+        """Предсказание для PIL Image (совместимость)"""
+        pred, _ = self.predict_with_confidence(image_pil)
+        return pred
+
     def process_dicom(self, dicom_path):
-        """Полный пайплайн обработки DICOM"""
         try:
             left_img, right_img = self.preprocess_dicom(dicom_path)
-            left_pred = self.predict(left_img)
-            right_pred = self.predict(right_img)
-            return left_pred, right_pred
+
+            left_pred, left_confidence = self.predict_with_confidence(left_img)
+            right_pred, right_confidence = self.predict_with_confidence(right_img)
+
+            # Преобразование confidence в проценты
+            left_confidence = left_confidence * 100
+            right_confidence = right_confidence * 100
+
+            logger.info(
+                f"Processed DICOM: Left {'Fracture' if left_pred else 'Normal'} "
+                f"({left_confidence:.1f}%), Right {'Fracture' if right_pred else 'Normal'} "
+                f"({right_confidence:.1f}%)"
+            )
+
+            return left_pred, left_confidence, right_pred, right_confidence
 
         except Exception as e:
-            logger.error(f"Full processing failed: {str(e)}")
+            logger.error(f"Full processing failed: {str(e)}", exc_info=True)
             raise
