@@ -11,9 +11,6 @@
             --primary-color: #007bff;
             --border-color: #ddd;
             --light-bg: #f9f9f9;
-            --confidence-high: #28a745;
-            --confidence-medium: #ffc107;
-            --confidence-low: #dc3545;
         }
 
         body {
@@ -93,20 +90,35 @@
             border-radius: 5px;
         }
 
-        .confidence-high {
-            background-color: var(--confidence-high);
+        .confidence-fracture {
+            background-color: var(--fracture-color);
         }
 
-        .confidence-medium {
-            background-color: var(--confidence-medium);
-        }
-
-        .confidence-low {
-            background-color: var(--confidence-low);
+        .confidence-normal {
+            background-color: var(--normal-color);
         }
 
         .confidence-value {
             font-weight: 600;
+        }
+
+        .medical-conclusion {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .conclusion-fracture {
+            background-color: rgba(220, 53, 69, 0.1);
+            border-left: 4px solid var(--fracture-color);
+            color: var(--fracture-color);
+        }
+
+        .conclusion-normal {
+            background-color: rgba(40, 167, 69, 0.1);
+            border-left: 4px solid var(--normal-color);
+            color: var(--normal-color);
         }
 
         .image-section {
@@ -280,25 +292,11 @@
 
                 <p><strong>Model Confidence:</strong>
                     {% if object.confidence_left %}
-                        <span class="confidence-value" style="color:
-                            {% if object.confidence_left >= 80 %}
-                                var(--confidence-high)
-                            {% elif object.confidence_left >= 60 %}
-                                var(--confidence-medium)
-                            {% else %}
-                                var(--confidence-low)
-                            {% endif %}">
+                        <span class="confidence-value" style="color: {% if object.result_left_hip == 0 %}var(--fracture-color){% else %}var(--normal-color){% endif %}">
                             {{ object.confidence_left|floatformat:1 }}%
                         </span>
                         <div class="confidence-meter">
-                            <div class="confidence-level
-                                {% if object.confidence_left >= 80 %}
-                                    confidence-high
-                                {% elif object.confidence_left >= 60 %}
-                                    confidence-medium
-                                {% else %}
-                                    confidence-low
-                                {% endif %}"
+                            <div class="confidence-level {% if object.result_left_hip == 0 %}confidence-fracture{% else %}confidence-normal{% endif %}"
                                 style="width: {{ object.confidence_left }}%">
                             </div>
                         </div>
@@ -306,6 +304,14 @@
                         <span>Not available</span>
                     {% endif %}
                 </p>
+
+                <div class="medical-conclusion {% if object.result_left_hip == 0 %}conclusion-fracture{% else %}conclusion-normal{% endif %}">
+                    {% if object.result_left_hip == 0 %}
+                        Pathology detected. Urgent consultation with an orthopedic traumatologist recommended.
+                    {% else %}
+                        No pathology detected. Repeat examination recommended if clinical indications exist.
+                    {% endif %}
+                </div>
 
                 <div class="image-container">
                     {% if object.left_hip_image %}
@@ -337,25 +343,11 @@
 
                 <p><strong>Model Confidence:</strong>
                     {% if object.confidence_right %}
-                        <span class="confidence-value" style="color:
-                            {% if object.confidence_right >= 80 %}
-                                var(--confidence-high)
-                            {% elif object.confidence_right >= 60 %}
-                                var(--confidence-medium)
-                            {% else %}
-                                var(--confidence-low)
-                            {% endif %}">
+                        <span class="confidence-value" style="color: {% if object.result_right_hip == 0 %}var(--fracture-color){% else %}var(--normal-color){% endif %}">
                             {{ object.confidence_right|floatformat:1 }}%
                         </span>
                         <div class="confidence-meter">
-                            <div class="confidence-level
-                                {% if object.confidence_right >= 80 %}
-                                    confidence-high
-                                {% elif object.confidence_right >= 60 %}
-                                    confidence-medium
-                                {% else %}
-                                    confidence-low
-                                {% endif %}"
+                            <div class="confidence-level {% if object.result_right_hip == 0 %}confidence-fracture{% else %}confidence-normal{% endif %}"
                                 style="width: {{ object.confidence_right }}%">
                             </div>
                         </div>
@@ -363,6 +355,14 @@
                         <span>Not available</span>
                     {% endif %}
                 </p>
+
+                <div class="medical-conclusion {% if object.result_right_hip == 0 %}conclusion-fracture{% else %}conclusion-normal{% endif %}">
+                    {% if object.result_right_hip == 0 %}
+                        Pathology detected. Urgent consultation with an orthopedic traumatologist recommended.
+                    {% else %}
+                        No pathology detected. Repeat examination recommended if clinical indications exist.
+                    {% endif %}
+                </div>
 
                 <div class="image-container">
                     {% if object.right_hip_image %}
