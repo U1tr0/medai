@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study Details #{{ object.id }} - DICOM Processor</title>
+    <title>Детали исследования #{{ object.id }} - MedAI</title>
     <style>
         :root {
             --fracture-color: #dc3545;
@@ -215,37 +215,37 @@
 </head>
 <body>
     <div class="container">
-        <h1>Study Details #{{ object.id }}</h1>
+        <h1>Детали исследования #{{ object.id }}</h1>
 
         <div class="study-info">
-            <h2>Patient Information</h2>
+            <h2>Информация о пациенте</h2>
             <table>
                 <tr>
-                    <th>Title</th>
-                    <td>{{ object.title|default:"Not specified" }}</td>
+                    <th>Название</th>
+                    <td>{{ object.title|default:"Не указано" }}</td>
                 </tr>
                 <tr>
-                    <th>Patient ID</th>
-                    <td>{{ object.patient_id|default:"Not specified" }}</td>
+                    <th>ID пациента</th>
+                    <td>{{ object.patient_id|default:"Не указано" }}</td>
                 </tr>
                 <tr>
-                    <th>Sex</th>
-                    <td>{{ object.patient_sex|default:"Not specified" }}</td>
+                    <th>Пол</th>
+                    <td>{{ object.patient_sex|default:"Не указано" }}</td>
                 </tr>
                 <tr>
-                    <th>Age</th>
-                    <td>{{ object.patient_age|default:"Not specified" }}</td>
+                    <th>Возраст</th>
+                    <td>{{ object.patient_age|default:"Не указано" }}</td>
                 </tr>
                 <tr>
-                    <th>Study Date</th>
-                    <td>{{ object.study_date|date:"Y-m-d"|default:"Not specified" }}</td>
+                    <th>Дата исследования</th>
+                    <td>{{ object.study_date|date:"Y-m-d"|default:"Не указано" }}</td>
                 </tr>
                 <tr>
-                    <th>Upload Date</th>
+                    <th>Дата загрузки</th>
                     <td>{{ object.upload_date|date:"Y-m-d H:i" }}</td>
                 </tr>
                 <tr>
-                    <th>Status</th>
+                    <th>Статус</th>
                     <td>
                         <span style="text-transform: capitalize;">{{ object.processing_status }}</span>
                         {% if object.processing_status == 'failed' %}
@@ -259,38 +259,38 @@
         </div>
 
         <div class="image-section">
-            <h2>Original DICOM Image</h2>
+            <h2>Исходное DICOM-изображение</h2>
             <div class="image-container">
                 {% if object.dicom_preview %}
                     <img src="{{ object.dicom_preview.url }}"
                          class="dicom-image"
-                         alt="DICOM Preview"
+                         alt="Превью DICOM"
                          onerror="this.style.display='none'; document.getElementById('preview-error').style.display='block'">
                     <div id="preview-error" class="alert" style="display:none;">
-                        <div class="image-error">Error loading preview image</div>
+                        <div class="image-error">Ошибка загрузки изображения</div>
                         <div class="image-path">URL: {{ object.dicom_preview.url }}</div>
                     </div>
                 {% else %}
                     <div class="alert">
-                        DICOM preview not generated
+                        Превью DICOM не сгенерировано
                     </div>
                 {% endif %}
             </div>
         </div>
 
-        <h2>Fracture Analysis Results</h2>
+        <h2>Результаты анализа на переломы</h2>
         <div class="results-container">
             <div class="result-box {% if object.result_left_hip == 0 %}fracture{% else %}normal{% endif %}">
-                <h3>Left Hip</h3>
-                <p><strong>Result:</strong>
+                <h3>Левый тазобедренный сустав</h3>
+                <p><strong>Результат:</strong>
                     {% if object.result_left_hip == 0 %}
-                        <span style="color: var(--fracture-color); font-weight: 600;">Fracture Detected</span>
+                        <span style="color: var(--fracture-color); font-weight: 600;">Обнаружен перелом</span>
                     {% else %}
-                        <span style="color: var(--normal-color); font-weight: 600;">Normal</span>
+                        <span style="color: var(--normal-color); font-weight: 600;">Норма</span>
                     {% endif %}
                 </p>
 
-                <p><strong>Model Confidence:</strong>
+                <p><strong>Доверие модели:</strong>
                     {% if object.confidence_left %}
                         <span class="confidence-value" style="color: {% if object.result_left_hip == 0 %}var(--fracture-color){% else %}var(--normal-color){% endif %}">
                             {{ object.confidence_left|floatformat:1 }}%
@@ -301,15 +301,15 @@
                             </div>
                         </div>
                     {% else %}
-                        <span>Not available</span>
+                        <span>Недоступно</span>
                     {% endif %}
                 </p>
 
                 <div class="medical-conclusion {% if object.result_left_hip == 0 %}conclusion-fracture{% else %}conclusion-normal{% endif %}">
                     {% if object.result_left_hip == 0 %}
-                        Pathology detected. Urgent consultation with an orthopedic traumatologist recommended.
+                        Обнаружена патология. Рекомендуется срочная консультация травматолога-ортопеда.
                     {% else %}
-                        No pathology detected. Repeat examination recommended if clinical indications exist.
+                        Патология не обнаружена. Повторное обследование рекомендуется при наличии клинических показаний.
                     {% endif %}
                 </div>
 
@@ -317,31 +317,31 @@
                     {% if object.left_hip_image %}
                         <img src="{{ object.left_hip_image.url }}"
                              class="dicom-image"
-                             alt="Left Hip Processed Image"
+                             alt="Обработанное изображение левого сустава"
                              onerror="this.style.display='none'; document.getElementById('left-hip-error').style.display='block'">
                         <div id="left-hip-error" class="alert" style="display:none;">
-                            <div class="image-error">Error loading left hip image</div>
+                            <div class="image-error">Ошибка загрузки изображения левого сустава</div>
                             <div class="image-path">URL: {{ object.left_hip_image.url }}</div>
                         </div>
                     {% else %}
                         <div class="alert">
-                            Left hip image not generated
+                            Изображение левого сустава не сгенерировано
                         </div>
                     {% endif %}
                 </div>
             </div>
 
             <div class="result-box {% if object.result_right_hip == 0 %}fracture{% else %}normal{% endif %}">
-                <h3>Right Hip</h3>
-                <p><strong>Result:</strong>
+                <h3>Правый тазобедренный сустав</h3>
+                <p><strong>Результат:</strong>
                     {% if object.result_right_hip == 0 %}
-                        <span style="color: var(--fracture-color); font-weight: 600;">Fracture Detected</span>
+                        <span style="color: var(--fracture-color); font-weight: 600;">Обнаружен перелом</span>
                     {% else %}
-                        <span style="color: var(--normal-color); font-weight: 600;">Normal</span>
+                        <span style="color: var(--normal-color); font-weight: 600;">Норма</span>
                     {% endif %}
                 </p>
 
-                <p><strong>Model Confidence:</strong>
+                <p><strong>Доверие модели:</strong>
                     {% if object.confidence_right %}
                         <span class="confidence-value" style="color: {% if object.result_right_hip == 0 %}var(--fracture-color){% else %}var(--normal-color){% endif %}">
                             {{ object.confidence_right|floatformat:1 }}%
@@ -352,15 +352,15 @@
                             </div>
                         </div>
                     {% else %}
-                        <span>Not available</span>
+                        <span>Недоступно</span>
                     {% endif %}
                 </p>
 
                 <div class="medical-conclusion {% if object.result_right_hip == 0 %}conclusion-fracture{% else %}conclusion-normal{% endif %}">
                     {% if object.result_right_hip == 0 %}
-                        Pathology detected. Urgent consultation with an orthopedic traumatologist recommended.
+                        Обнаружена патология. Рекомендуется срочная консультация травматолога-ортопеда.
                     {% else %}
-                        No pathology detected. Repeat examination recommended if clinical indications exist.
+                        Патология не обнаружена. Повторное обследование рекомендуется при наличии клинических показаний.
                     {% endif %}
                 </div>
 
@@ -368,22 +368,22 @@
                     {% if object.right_hip_image %}
                         <img src="{{ object.right_hip_image.url }}"
                              class="dicom-image"
-                             alt="Right Hip Processed Image"
+                             alt="Обработанное изображение правого сустава"
                              onerror="this.style.display='none'; document.getElementById('right-hip-error').style.display='block'">
                         <div id="right-hip-error" class="alert" style="display:none;">
-                            <div class="image-error">Error loading right hip image</div>
+                            <div class="image-error">Ошибка загрузки изображения правого сустава</div>
                             <div class="image-path">URL: {{ object.right_hip_image.url }}</div>
                         </div>
                     {% else %}
                         <div class="alert">
-                            Right hip image not generated
+                            Изображение правого сустава не сгенерировано
                         </div>
                     {% endif %}
                 </div>
             </div>
         </div>
 
-        <a href="{% url 'study_list' %}" class="back-link">← Back to Studies List</a>
+        <a href="{% url 'study_list' %}" class="back-link">← Назад к списку исследований</a>
     </div>
 </body>
 </html>

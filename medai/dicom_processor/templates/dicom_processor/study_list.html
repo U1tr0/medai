@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DICOM Processor - Studies List</title>
+    <title>MedAI - Список исследований</title>
     <style>
         :root {
             --primary-color: #007bff;
@@ -187,31 +187,31 @@
 </head>
 <body>
     <div class="disclaimer-banner">
-        <div class="disclaimer-title">IMPORTANT DISCLAIMER</div>
+        <div class="disclaimer-title">ВАЖНОЕ УВЕДОМЛЕНИЕ</div>
         <p class="disclaimer-text">
-            This is an educational/research project for hip fracture detection only and NOT a certified medical device.
-            Results should not be used for clinical decision-making. Always consult healthcare professionals for medical diagnosis.
+            Данный проект предназначен только для образовательных/исследовательских целей по обнаружению переломов тазобедренного сустава и НЕ является сертифицированным медицинским устройством.
+            Результаты не должны использоваться для принятия клинических решений. Всегда консультируйтесь с медицинскими специалистами для постановки диагноза.
         </p>
     </div>
 
     <div class="container">
         <div class="header">
-            <h1>Medical AI - Hip Fracture Detection</h1>
-            <a href="{% url 'upload_study' %}" class="upload-btn">Upload New Study</a>
+            <h1>MedAI - Обнаружение переломов бедра</h1>
+            <a href="{% url 'upload_study' %}" class="upload-btn">Загрузить новое исследование</a>
         </div>
 
-        <p>Upload DICOM files for automated fracture detection analysis.</p>
+        <p>Загрузите DICOM-файлы для автоматического анализа на наличие переломов.</p>
 
         {% if studies %}
         <table>
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Title</th>
-                    <th>Patient ID</th>
-                    <th>Status</th>
-                    <th>Upload Date</th>
-                    <th>Action</th>
+                    <th>Название</th>
+                    <th>ID пациента</th>
+                    <th>Статус</th>
+                    <th>Дата загрузки</th>
+                    <th>Действие</th>
                 </tr>
             </thead>
             <tbody>
@@ -227,7 +227,7 @@
                     </td>
                     <td>{{ study.upload_date|date:"Y-m-d H:i" }}</td>
                     <td>
-                        <a href="{% url 'study_detail' study.id %}" class="view-link">View Details</a>
+                        <a href="{% url 'study_detail' study.id %}" class="view-link">Просмотр</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -235,7 +235,7 @@
         </table>
         {% else %}
         <div class="empty-message">
-            No studies found. <a href="{% url 'upload_study' %}">Upload your first DICOM study</a> to get started.
+            Исследования не найдены. <a href="{% url 'upload_study' %}">Загрузите первое DICOM-исследование</a>, чтобы начать работу.
         </div>
         {% endif %}
     </div>

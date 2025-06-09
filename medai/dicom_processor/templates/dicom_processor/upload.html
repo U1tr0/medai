@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload DICOM - Medical AI</title>
+    <title>Загрузка DICOM - MedAI</title>
     <style>
         :root {
             --primary-color: #007bff;
@@ -189,20 +189,20 @@
 </head>
 <body>
     <div class="container">
-        <a href="{% url 'study_list' %}" class="back-link">← Back to Studies List</a>
-        <h1>Upload DICOM File</h1>
+        <a href="{% url 'study_list' %}" class="back-link">← Назад к списку исследований</a>
+        <h1>Загрузка DICOM-файла</h1>
 
         <form method="post" enctype="multipart/form-data" class="upload-form">
             {% csrf_token %}
 
             <div class="form-group">
-                <label for="{{ form.title.id_for_label }}">Study Title</label>
+                <label for="{{ form.title.id_for_label }}">Название исследования</label>
                 {{ form.title }}
                 {{ form.title.errors }}
             </div>
 
             <div class="form-group">
-                <label for="{{ form.dicom_file.id_for_label }}">DICOM File</label>
+                <label for="{{ form.dicom_file.id_for_label }}">DICOM-файл</label>
                 <div class="file-input-wrapper">
                     <div class="file-input-button">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -210,7 +210,7 @@
                             <polyline points="17 8 12 3 7 8"></polyline>
                             <line x1="12" y1="3" x2="12" y2="15"></line>
                         </svg>
-                        <div class="file-input-text">Click to select DICOM file or drag and drop</div>
+                        <div class="file-input-text">Нажмите для выбора DICOM-файла или перетащите его</div>
                         {{ form.dicom_file }}
                     </div>
                 </div>
@@ -218,7 +218,7 @@
             </div>
 
             <div class="form-actions">
-                <button type="submit" class="btn">Upload Study</button>
+                <button type="submit" class="btn">Загрузить исследование</button>
             </div>
         </form>
     </div>
@@ -226,7 +226,7 @@
     <script>
         // Обновление текста при выборе файла
         document.querySelector('input[type="file"]').addEventListener('change', function(e) {
-            const fileName = e.target.files[0] ? e.target.files[0].name : 'No file selected';
+            const fileName = e.target.files[0] ? e.target.files[0].name : 'Файл не выбран';
             document.querySelector('.file-input-text').textContent = fileName;
         });
     </script>
