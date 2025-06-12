@@ -90,43 +90,34 @@ def upload_study(request):
             try:
                 study = form.save(commit=False)
                 study.processing_status = 'pending'
-
-                # Извлечение и обработка DICOM метаданных
-                metadata = extract_dicom_metadata(request.FILES['dicom_file'])
-
-                # Сохранение метаданных в модель
-                study.patient_id = metadata.get('patient_id', '')
-                study.patient_sex = metadata.get('patient_sex', '')
-                study.patient_age = metadata.get('patient_age')
-                study.study_date = metadata.get('study_date')
-                study.study_instance_uid = metadata.get('study_instance_uid', '')
-                study.accession_number = metadata.get('accession_number', '')
-                study.modality = metadata.get('modality', '')
-                study.body_part_examined = metadata.get('body_part_examined', '')
-                study.study_description = metadata.get('study_description', '')
-                study.original_patient_id = metadata.get('original_patient_id', '')
-                study.original_patient_name = metadata.get('original_patient_name', '')
-
                 study.save()
 
-                # Отправка задачи в Kafka на обработку
-                kafka_payload = {
-                    'study_id': study.id,
-                    'original_filename': request.FILES['dicom_file'].name,
-                    'timestamp': datetime.now().isoformat(),
-                }
-                send_to_kafka('dicom_studies', kafka_payload)
-                logger.info(f"Sent study {study.id} to Kafka for processing")
-
+                send_to_kafka('dicom_studies', {'study_id': study.id})
                 return redirect('study_list')
 
             except Exception as e:
-                logger.error(f"Failed to upload study: {str(e)}")
-                form.add_error(None, f"Ошибка обработки DICOM-файла: {str(e)}")
+                form.add_error(None, f"Ошибка при обработке файла: {str(e)}")
     else:
         form = DicomUploadForm()
 
-    return render(request, 'dicom_processor/upload.html', {
-        'form': form,
-        'max_upload_size': 50  # MB (можно вынести в настройки)
-    })
+    return render(request, 'dicom_processor/upload.html', {'form': form})
+
+
+def process_dicom_metadata(self, study, ds):
+    """Обработка и анонимизация DICOM метаданных"""
+    # Анонимизация персональных данных
+    study.anonymized_patient_id = hashlib.sha256(
+        getattr(ds, 'PatientID', '').encode()
+    ).hexdigest()[:16]
+
+    # Сохранение медицинских метаданных
+    study.patient_sex = getattr(ds, 'PatientSex', '')
+    study.patient_age = self.parse_dicom_age(getattr(ds, 'PatientAge', ''))
+    study.study_date = self.parse_dicom_date(getattr(ds, 'StudyDate', ''))
+    study.modality = getattr(ds, 'Modality', '')
+    study.body_part_examined = getattr(ds, 'BodyPartExamined', 'Тазобедренный сустав')
+    study.study_description = getattr(ds, 'StudyDescription', '')
+    study.accession_number = getattr(ds, 'AccessionNumber', '')
+    study.study_instance_uid = getattr(ds, 'StudyInstanceUID', '')
+
+    return study

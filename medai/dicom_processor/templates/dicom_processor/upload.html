@@ -132,15 +132,6 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .btn-secondary {
-            background-color: var(--secondary-color);
-            margin-right: 10px;
-        }
-
-        .btn-secondary:hover {
-            background-color: #5a6268;
-        }
-
         .form-actions {
             margin-top: 30px;
             display: flex;
@@ -162,12 +153,19 @@
         /* Стили для ошибок формы */
         .errorlist {
             color: var(--danger-color);
-            padding-left: 20px;
+            padding-left: 0;
             margin-top: 5px;
+            list-style: none;
         }
 
         .errorlist li {
             margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        /* Стиль для ошибок поля */
+        .error-field {
+            border-color: var(--danger-color) !important;
         }
 
         @media (max-width: 768px) {
@@ -195,26 +193,55 @@
         <form method="post" enctype="multipart/form-data" class="upload-form">
             {% csrf_token %}
 
+            {% if form.non_field_errors %}
+                <div class="form-group">
+                    <div class="errorlist">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
             <div class="form-group">
                 <label for="{{ form.title.id_for_label }}">Название исследования</label>
                 {{ form.title }}
-                {{ form.title.errors }}
+                {% if form.title.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.title.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
             </div>
 
             <div class="form-group">
                 <label for="{{ form.dicom_file.id_for_label }}">DICOM-файл</label>
                 <div class="file-input-wrapper">
-                    <div class="file-input-button">
+                    <div class="file-input-button {% if form.dicom_file.errors %}error-field{% endif %}">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                             <polyline points="17 8 12 3 7 8"></polyline>
                             <line x1="12" y1="3" x2="12" y2="15"></line>
                         </svg>
-                        <div class="file-input-text">Нажмите для выбора DICOM-файла или перетащите его</div>
+                        <div class="file-input-text">
+                            {% if form.dicom_file.value %}
+                                {{ form.dicom_file.value.name }}
+                            {% else %}
+                                Нажмите для выбора DICOM-файла (.dcm или .dicom)
+                            {% endif %}
+                        </div>
                         {{ form.dicom_file }}
                     </div>
                 </div>
-                {{ form.dicom_file.errors }}
+                {% if form.dicom_file.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.dicom_file.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                <small class="file-input-text">Поддерживаются только файлы с расширением .dcm или .dicom</small>
             </div>
 
             <div class="form-actions">
@@ -226,8 +253,16 @@
     <script>
         // Обновление текста при выборе файла
         document.querySelector('input[type="file"]').addEventListener('change', function(e) {
-            const fileName = e.target.files[0] ? e.target.files[0].name : 'Файл не выбран';
+            const fileName = e.target.files[0] ? e.target.files[0].name : 'Нажмите для выбора DICOM-файла (.dcm или .dicom)';
             document.querySelector('.file-input-text').textContent = fileName;
+
+            // Подсветка поля при ошибке
+            const fileExt = fileName.split('.').pop().toLowerCase();
+            if (fileExt !== 'dcm' && fileExt !== 'dicom') {
+                document.querySelector('.file-input-button').classList.add('error-field');
+            } else {
+                document.querySelector('.file-input-button').classList.remove('error-field');
+            }
         });
     </script>
 </body>
