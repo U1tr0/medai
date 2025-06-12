@@ -221,12 +221,16 @@
             <h2>Информация о пациенте</h2>
             <table>
                 <tr>
-                    <th>Название</th>
+                    <th>Название исследования</th>
                     <td>{{ object.title|default:"Не указано" }}</td>
                 </tr>
                 <tr>
+                    <th>ФИО пациента</th>
+                    <td>Анонимизировано</td>
+                </tr>
+                <tr>
                     <th>ID пациента</th>
-                    <td>{{ object.patient_id|default:"Не указано" }}</td>
+                    <td>{{ object.patient_id|default:"Анонимизировано" }}</td>
                 </tr>
                 <tr>
                     <th>Пол</th>
@@ -234,20 +238,46 @@
                 </tr>
                 <tr>
                     <th>Возраст</th>
-                    <td>{{ object.patient_age|default:"Не указано" }}</td>
+                    <td>
+                        {% if object.patient_age %}
+                            {{ object.patient_age }} лет
+                        {% else %}
+                            Не указано
+                        {% endif %}
+                    </td>
                 </tr>
                 <tr>
                     <th>Дата исследования</th>
-                    <td>{{ object.study_date|date:"Y-m-d"|default:"Не указано" }}</td>
+                    <td>{{ object.study_date|date:"d.m.Y"|default:"Не указано" }}</td>
+                </tr>
+                <tr>
+                    <th>Область исследования</th>
+                    <td>{{ object.body_part_examined|default:"Тазобедренный сустав" }}</td>
+                </tr>
+                <tr>
+                    <th>UID исследования</th>
+                    <td>{{ object.study_instance_uid|default:"Не указано" }}</td>
                 </tr>
                 <tr>
                     <th>Дата загрузки</th>
-                    <td>{{ object.upload_date|date:"Y-m-d H:i" }}</td>
+                    <td>{{ object.upload_date|date:"d.m.Y H:i" }}</td>
                 </tr>
                 <tr>
-                    <th>Статус</th>
+                    <th>Статус обработки</th>
                     <td>
-                        <span style="text-transform: capitalize;">{{ object.processing_status }}</span>
+                        <span style="text-transform: capitalize;">
+                            {% if object.processing_status == 'pending' %}
+                                В ожидании
+                            {% elif object.processing_status == 'processing' %}
+                                В обработке
+                            {% elif object.processing_status == 'completed' %}
+                                Завершено
+                            {% elif object.processing_status == 'failed' %}
+                                Ошибка
+                            {% else %}
+                                {{ object.processing_status }}
+                            {% endif %}
+                        </span>
                         {% if object.processing_status == 'failed' %}
                             <span style="color: var(--fracture-color);">⚠️</span>
                         {% elif object.processing_status == 'completed' %}

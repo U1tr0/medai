@@ -6,6 +6,8 @@ import numpy as np
 from PIL import Image
 import logging
 import os
+import hashlib
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -101,21 +103,71 @@ class HipFractureDetector:
         try:
             left_img, right_img = self.preprocess_dicom(dicom_path)
 
+            # Получаем предсказания и confidence scores
             left_pred, left_confidence = self.predict_with_confidence(left_img)
             right_pred, right_confidence = self.predict_with_confidence(right_img)
 
-            # Преобразование confidence в проценты
+            # Преобразуем confidence в проценты (0-100)
             left_confidence = left_confidence * 100
             right_confidence = right_confidence * 100
 
-            logger.info(
-                f"Processed DICOM: Left {'Fracture' if left_pred else 'Normal'} "
-                f"({left_confidence:.1f}%), Right {'Fracture' if right_pred else 'Normal'} "
-                f"({right_confidence:.1f}%)"
-            )
-
-            return left_pred, left_confidence, right_pred, right_confidence
+            return {
+                'left_pred': left_pred,
+                'left_confidence': left_confidence,
+                'right_pred': right_pred,
+                'right_confidence': right_confidence,
+                'status': 'completed'
+            }
 
         except Exception as e:
             logger.error(f"Full processing failed: {str(e)}", exc_info=True)
-            raise
+            return {
+                'status': 'failed',
+                'error': str(e)
+            }
+
+    def extract_dicom_metadata(self, dicom_path):
+        """Извлечение и анонимизация DICOM-метаданных"""
+        try:
+            ds = pydicom.dcmread(dicom_path)
+            metadata = {
+                'original_patient_id': getattr(ds, 'PatientID', ''),
+                'original_patient_name': getattr(ds, 'PatientName', ''),
+                'patient_id': self.anonymize_value(getattr(ds, 'PatientID', '')),
+                'patient_sex': getattr(ds, 'PatientSex', ''),
+                'patient_age': self.parse_age(getattr(ds, 'PatientAge', '')),
+                'study_date': self.parse_date(getattr(ds, 'StudyDate', '')),
+                'study_instance_uid': getattr(ds, 'StudyInstanceUID', ''),
+                'accession_number': getattr(ds, 'AccessionNumber', ''),
+                'modality': getattr(ds, 'Modality', ''),
+                'body_part_examined': getattr(ds, 'BodyPartExamined', ''),
+                'study_description': getattr(ds, 'StudyDescription', ''),
+            }
+            return metadata
+        except Exception as e:
+            logger.error(f"Failed to extract DICOM metadata: {str(e)}")
+            return {}
+
+    def anonymize_value(self, value):
+        """Анонимизация значений с помощью хэширования"""
+        if not value:
+            return ''
+        return hashlib.sha256(value.encode()).hexdigest()[:16]
+
+    def parse_age(self, age_str):
+        """Парсинг возраста из строки DICOM (формат '###Y')"""
+        if not age_str:
+            return None
+        try:
+            return int(age_str[:-1])
+        except (ValueError, TypeError):
+            return None
+
+    def parse_date(self, date_str):
+        """Парсинг даты из строки DICOM (формат 'YYYYMMDD')"""
+        if not date_str or len(date_str) != 8:
+            return None
+        try:
+            return datetime.strptime(date_str, '%Y%m%d').date()
+        except ValueError:
+            return None

@@ -9,6 +9,14 @@ class DicomStudy(models.Model):
     patient_age = models.IntegerField(null=True, blank=True)
     study_date = models.DateField(null=True, blank=True)
     upload_date = models.DateTimeField(auto_now_add=True)
+    study_instance_uid = models.CharField(max_length=100, blank=True)
+    accession_number = models.CharField(max_length=100, blank=True)
+    modality = models.CharField(max_length=20, blank=True)
+    body_part_examined = models.CharField(max_length=100, blank=True)
+    study_description = models.TextField(blank=True)
+    original_patient_id = models.CharField(max_length=100, blank=True)  # Для анонимизированной версии
+    original_patient_name = models.CharField(max_length=255, blank=True)  # Для анонимизированной версии
+
     processing_status = models.CharField(
         max_length=20,
         choices=[
@@ -39,6 +47,7 @@ class DicomStudy(models.Model):
     )
     confidence_left = models.FloatField(null=True, blank=True, verbose_name="Confidence Score Left Hip")
     confidence_right = models.FloatField(null=True, blank=True, verbose_name="Confidence Score Right Hip")
+
 
 
     def preview_exists(self):
