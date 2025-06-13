@@ -7,6 +7,8 @@ from datetime import datetime
 from .kafka_service import send_to_kafka
 import hashlib
 import logging
+from django.shortcuts import get_object_or_404, redirect
+from django.http import HttpResponse, HttpResponseServerError
 
 logger = logging.getLogger(__name__)
 
@@ -89,6 +91,22 @@ def upload_study(request):
         if form.is_valid():
             try:
                 study = form.save(commit=False)
+
+                # Чтение DICOM файла
+                dicom_file = request.FILES['dicom_file']
+                ds = pydicom.dcmread(dicom_file)
+
+                # Сохранение всех необходимых метаданных
+                study.patient_id = getattr(ds, 'PatientID', '')
+                study.patient_sex = getattr(ds, 'PatientSex', '')
+                study.patient_age = getattr(ds, 'PatientAge', '')[:3] if hasattr(ds, 'PatientAge') else None
+                study.study_date = parse_dicom_date(getattr(ds, 'StudyDate', ''))
+                study.modality = getattr(ds, 'Modality', '')
+                study.body_part_examined = getattr(ds, 'BodyPartExamined', 'Тазобедренный сустав')
+                study.study_description = getattr(ds, 'StudyDescription', '')
+                study.accession_number = getattr(ds, 'AccessionNumber', '')
+                study.study_instance_uid = getattr(ds, 'StudyInstanceUID', '')
+
                 study.processing_status = 'pending'
                 study.save()
 
@@ -96,7 +114,8 @@ def upload_study(request):
                 return redirect('study_list')
 
             except Exception as e:
-                form.add_error(None, f"Ошибка при обработке файла: {str(e)}")
+                logger.error(f"Error processing DICOM: {str(e)}")
+                form.add_error(None, f"Ошибка обработки DICOM-файла: {str(e)}")
     else:
         form = DicomUploadForm()
 
@@ -118,6 +137,23 @@ def process_dicom_metadata(self, study, ds):
     study.body_part_examined = getattr(ds, 'BodyPartExamined', 'Тазобедренный сустав')
     study.study_description = getattr(ds, 'StudyDescription', '')
     study.accession_number = getattr(ds, 'AccessionNumber', '')
+    study.patient_id = getattr(ds, 'PatientID', '')
     study.study_instance_uid = getattr(ds, 'StudyInstanceUID', '')
 
     return study
+
+
+def download_annotated_dicom(request, pk):
+    """Скачивание анонимизированного DICOM с результатами"""
+    study = get_object_or_404(DicomStudy, pk=pk)
+
+    if study.processing_status != 'completed':
+        return HttpResponse("Исследование еще не обработано", status=400)
+
+    annotated_dicom = study.get_annotated_dicom()
+    if not annotated_dicom:
+        return HttpResponseServerError("Ошибка генерации файла. Пожалуйста, попробуйте позже.")
+
+    response = HttpResponse(annotated_dicom, content_type='application/dicom')
+    response['Content-Disposition'] = f'attachment; filename="result_{study.id}.dcm"'
+    return response

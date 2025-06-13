@@ -9,6 +9,7 @@
             --fracture-color: #dc3545;
             --normal-color: #28a745;
             --primary-color: #007bff;
+            --success-color: #28a745;
             --border-color: #ddd;
             --light-bg: #f9f9f9;
         }
@@ -158,6 +159,48 @@
             background-color: #0056b3;
         }
 
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: var(--success-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-left: 15px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .download-btn:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .download-btn svg {
+            margin-right: 8px;
+        }
+
+        .download-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .download-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 15px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -209,6 +252,24 @@
 
             .result-box {
                 min-width: 100%;
+            }
+
+            .download-section {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .download-actions {
+                flex-direction: column;
+                align-items: flex-start;
+                width: 100%;
+            }
+
+            .download-btn {
+                margin-left: 0;
+                margin-top: 15px;
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
@@ -413,7 +474,33 @@
             </div>
         </div>
 
-        <a href="{% url 'study_list' %}" class="back-link">← Назад к списку исследований</a>
+        <div class="download-section">
+            <div class="button-group">
+                <a href="{% url 'study_list' %}" class="back-link">← Назад к списку исследований</a>
+                {% if object.processing_status == 'completed' %}
+                    <form id="download-form" action="{% url 'download_dicom' object.id %}" method="get" style="display: inline;">
+                        <button type="submit" class="download-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Скачать результат (DICOM)
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+            <small style="display: block; margin-top: 15px; color: #6c757d;">
+                Скачанный файл будет содержать оригинальные DICOM-данные с добавленными результатами анализа
+            </small>
+        </div>
     </div>
+
+    <script>
+        document.getElementById('download-form')?.addEventListener('submit', function(e) {
+            window.open(this.action, '_blank');
+            e.preventDefault();
+        });
+    </script>
 </body>
 </html>

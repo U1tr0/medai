@@ -8,4 +8,5 @@ urlpatterns = [
     path('', views.StudyListView.as_view(), name='study_list'),
     path('upload/', views.upload_study, name='upload_study'),
     path('study/<int:pk>/', StudyDetailView.as_view(), name='study_detail'),
+    path('study/<int:pk>/download/', views.download_annotated_dicom, name='download_dicom'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
